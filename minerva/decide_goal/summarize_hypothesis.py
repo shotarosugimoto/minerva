@@ -2,7 +2,7 @@ import openai
 
 
 class SummarizeHypothesis:
-    def __init__(self, openai_api_key, goal, information, hypothesis_list, user_intent):
+    def __init__(self, openai_api_key: str, goal: str, information: str, hypothesis_list: list[str], user_intent: str):
         openai.api_key = openai_api_key
         information_prompt = ''
         if information != '':
