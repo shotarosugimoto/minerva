@@ -4,7 +4,7 @@ import re
 
 class GenerateHypothesis:
 
-    def __init__(self, openai_api_key, goal, information, user_intent):
+    def __init__(self, openai_api_key: str, goal: str, information: str, user_intent: str):
         openai.api_key = openai_api_key
         information_prompt = ''
         if information != '':
@@ -18,8 +18,7 @@ class GenerateHypothesis:
 {information_prompt}
 {user_intent_prompt}
 ##
-ensure that there is no discrepancy between what the user wants 
-and what you are ultimately trying to accomplish.'''
+ensure that there is no discrepancy between what the user wants and what you are ultimately trying to accomplish.'''
 
         self.assistant_prompt = '''
 1. ~~

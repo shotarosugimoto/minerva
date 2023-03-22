@@ -3,7 +3,7 @@ import os
 import openai
 import re
 
-env_path = os.path.join(os.path.dirname(__file__), '../.env')
+env_path = os.path.join(os.path.dirname(__file__), '../../.env')
 load_dotenv(env_path)
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
