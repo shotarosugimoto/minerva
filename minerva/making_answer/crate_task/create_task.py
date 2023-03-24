@@ -18,8 +18,8 @@ class CreateTask:
                                           processed_task_number=self.processed_task_number)
 
             print('\nThese are the tasks into which the current task is divided.')
-            print(f'The current task: {self.tree_element_list[self.processed_task_number]}')
-            print('The divided tasks:z\n')
+            print(f'The current task: {self.tree_element_list[self.processed_task_number].task}')
+            print('The divided tasks:\n')
             for i in range(len(outline_list)):
                 print(f'{i+1}.: {outline_list[i]}\n')
             print('If you think this division is appropriate, please press enter, '

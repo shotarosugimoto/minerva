@@ -17,7 +17,6 @@ def create_answer_from_bottom_elements(openai_api_key: str, goal: str, tree_elem
         {"role": "user", "content": user_prompt}
     ]
 
-    # Call the ChatCompletion API
     response = openai.ChatCompletion.create(
         temperature=1,
         max_tokens=1000,
