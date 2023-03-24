@@ -1,11 +1,11 @@
-from task_tree_element import TaskTreeElement
-from .enough_information import EnoughInformation
-from .input_information_function.input_information_function import InputInformationFunction
-from .should_task_breakdown import should_task_breakdown
-from .crate_task.create_task import CreateTask
-from .solve_task.crate_gpt_role import crate_gpt_role
-from .solve_task.solve_task import solve_task
-from .create_answer_from_bottom_elements import create_answer_from_bottom_elements
+from minerva.making_answer.task_tree_element import TaskTreeElement
+from minerva.making_answer.enough_information import EnoughInformation
+from minerva.making_answer.input_information_function.input_information_function import InputInformationFunction
+from minerva.making_answer.should_task_breakdown import should_task_breakdown
+from minerva.making_answer.crate_task.create_task import CreateTask
+from minerva.making_answer.solve_task.crate_gpt_role import crate_gpt_role
+from minerva.making_answer.solve_task.solve_task import solve_task
+from minerva.making_answer.create_answer_from_bottom_elements import create_answer_from_bottom_elements
 
 from anytree import RenderTree
 
@@ -30,6 +30,7 @@ class MakingAnswer:
             enough_information = EnoughInformation(openai_api_key=self.openai_api_key, goal=self.initial_goal,
                                                    tree_element_list=self.tree_element_list,
                                                    processed_task_number=processed_task_number)
+
             if not enough_information.response_result():
                 input_information_function \
                     = InputInformationFunction(openai_api_key=self.openai_api_key, goal=self.initial_goal,
@@ -59,8 +60,8 @@ class MakingAnswer:
                         parent=self.tree_element_list[processed_task_number]
                     )
                 )
-                self.task_number +=1
-                process_order +=1
+                self.task_number += 1
+                process_order += 1
             return next_processed_task_number, 0
 
         if step_number == 1:
