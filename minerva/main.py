@@ -24,3 +24,16 @@ new_goal = decide_goal.redefine_goal()
 
 making_answer = MakingAnswer(openai_api_key=openai_api_key, initial_goal=new_goal,
                              initial_information=initial_information)
+
+processed_task_number: int = 0
+step_number: int = 0
+
+while 1:
+    process_location = making_answer.task_process(processed_task_number=processed_task_number, step_number=step_number)
+    processed_task_number = process_location[0]
+    step_number = process_location[1]
+    if process_location == 0 and step_number == 3:
+        break
+
+making_answer.print_final_answer()
+

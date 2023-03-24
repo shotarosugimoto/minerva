@@ -1,55 +1,57 @@
-from dotenv import load_dotenv
-import os
 import openai
-import re
-
-env_path = os.path.join(os.path.dirname(__file__), '../../.env')
-load_dotenv(env_path)
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+from task_tree_element import TaskTreeElement
 
 
-def enough_information(goal, task, user_intent, information):
-    # Prepare input for ChatGPT API
-    system_input = f"""
-    {goal} is what the user ultimately wants to accomplish
-    Now you are doing the task that {task}
-    user_intent
-    you have {information}
-    """
-    user_prompt = f"""
-    If more information about {goal} is needed to {task}, print "1Q".
-    If enough information about {goal} is available to {task}, print "1".
-    """
+class EnoughInformation:
 
-    # Build the list of messages for the API
-    messages = [
-        {"role": "system", "content": system_input},
-        {"role": "user", "content": user_prompt}
-    ]
+    def __init__(self, openai_api_key: str, goal: str, tree_element_list: list[TaskTreeElement],
+                 processed_task_number: int):
+        openai.api_key = openai_api_key
+        if len(tree_element_list) == 1:
+            information_prompt = f'you have {tree_element_list[0].information}'
+            if tree_element_list[0].information == '':
+                information_prompt = 'you have no information'
 
-    # Call the ChatCompletion API
-    response = openai.ChatCompletion.create(
-        temperature=1,
-        max_tokens=1000,
-        model="gpt-3.5-turbo",
-        messages=messages
-    )
+            self.system_input = f'''
+{goal} is what the user ultimately wants to accomplish
+Now you are doing the task that create the best output outline to achieve {goal}
+{information_prompt}'''
+            self.user_prompt = f'''
+If more information about {goal} is needed to create the best output outline to achieve {goal}, print "1Q".
+If enough information about {goal} is available to create the best output outline to achieve {goal}, print "1".
+'''
 
-    ai_response = response['choices'][0]['message']['content']
+        else:
+            current_task = tree_element_list[processed_task_number]
+            parents_task: TaskTreeElement = current_task.parent
+            children_task: list[TaskTreeElement] = parents_task.children
 
-    # Check the content of ai_response and return the appropriate response
-    if ai_response.strip() == "1":
-        return True
-    elif ai_response.strip() == "1Q":
-        return False
-    else:
-        return "Error: Invalid response"
+            # 何をしたいのかがよくわからないから保留
+            self.system_input = '''
+            '''
+            self.user_prompt = '''
+If more information about {goal} is needed to {task}, print "1Q".
+If enough information about {goal} is available to {task}, print "1"
+Be sure to output only "iQ" or "1".
+Please do not write any other explanations, notes, or circumstances that led to the output.just write 
+"iQ" or "1"please.'''
 
+        self.messages = [
+            {"role": "system", "content": self.system_input},
+            {"role": "user", "content": self.user_prompt},
+        ]
 
-# 一番最初の時
-goal = "新卒採用の戦略を作りたい"
-task = f"create the best output outline to achieve {goal}"
-information = "Users may seek to develop new channels and partnerships to reach " \
-              "a wider pool of high-quality candidates."
-
-enough_information(goal, task)
+    def response_result(self):
+        response = openai.ChatCompletion.create(
+            temperature=1,
+            max_tokens=1000,
+            model="gpt-3.5-turbo",
+            messages=self.messages
+        )
+        ai_response = response['choices'][0]['message']['content']
+        if ai_response.strip() == "1":
+            return True
+        elif ai_response.strip() == "1Q":
+            return False
+        else:
+            return "Error: Invalid response"
