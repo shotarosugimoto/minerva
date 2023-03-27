@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/tasuku/SALT2')
+
 from minerva.making_answer.task_tree_element import TaskTreeElement
 from minerva.making_answer.enough_information import EnoughInformation
 from minerva.making_answer.input_information_function.input_information_function import InputInformationFunction
@@ -8,6 +11,7 @@ from minerva.making_answer.solve_task.solve_task import solve_task
 from minerva.making_answer.create_answer_from_bottom_elements import create_answer_from_bottom_elements
 
 from anytree import RenderTree
+
 
 
 class MakingAnswer:
