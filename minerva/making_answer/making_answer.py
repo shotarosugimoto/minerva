@@ -24,6 +24,8 @@ class MakingAnswer:
         self.task_number += 1
 
     def task_process(self, processed_task_number, step_number):
+        print(processed_task_number)
+        print(step_number)
 
         # enough_informationから、breakdownまで
         if step_number == 0:
