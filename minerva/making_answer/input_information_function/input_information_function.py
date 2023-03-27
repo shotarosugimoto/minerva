@@ -21,6 +21,7 @@ class InputInformationFunction:
         self.now_task_element = tree_element_list[processed_task_number]
 
     def iif_process(self):
+        print('sssss')
         needed_information_list = list_needed_information(openai_api_key=self.openai_api_key, goal=self.goal,
                                                           tree_element_list=self.tree_element_list,
                                                           processed_task_number=self.processed_task_number)
