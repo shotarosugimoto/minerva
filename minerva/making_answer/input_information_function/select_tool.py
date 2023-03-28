@@ -1,6 +1,8 @@
 from ..task_tree_element import TaskTreeElement
 import openai
 
+from ...token_class import Token
+
 
 def select_tool(openai_api_key: str, goal: str, now_task_element: TaskTreeElement, needed_information: str):
     openai.api_key = openai_api_key
@@ -62,6 +64,12 @@ GPT-3.5に聞く情報
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
+
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    # print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('select_tool')
 
     if ai_response == '0':
         return 'user_input'

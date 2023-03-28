@@ -1,5 +1,6 @@
 import openai
 from ..task_tree_element import TaskTreeElement
+from ...token_class import Token
 
 
 def crate_gpt_role(openai_api_key, now_task_element: TaskTreeElement):
@@ -35,4 +36,10 @@ role: 今からあなたに決めてもらいます'''
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('crate_gpt_role')
+
     return ai_response

@@ -1,0 +1,2 @@
+# token usage history
+function_name: generate_hypothesis, use_token: 787, total_token: 787

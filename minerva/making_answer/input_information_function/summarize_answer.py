@@ -1,5 +1,7 @@
 import openai
 
+from minerva.token_class import Token
+
 
 def summarize_answer(openai_api_key: str, needed_information: str, questions: str, answers: str):
     openai.api_key = openai_api_key
@@ -29,4 +31,11 @@ answers: {answers}'''
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
+
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('summarize_answer')
+
     return ai_response

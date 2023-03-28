@@ -1,6 +1,8 @@
 from minerva.making_answer.task_tree_element import TaskTreeElement
 import openai
 
+from minerva.token_class import Token
+
 
 def should_task_breakdown(openai_api_key: str, goal: str, tree_element_list: list[TaskTreeElement],
                           processed_task_number: int):
@@ -27,7 +29,8 @@ goal: {goal}
 task: {tree_element_list[processed_task_number]}
 position: ゴールを{tree_element_list[processed_task_number].depth}分割した場所に位置しています
 user-intent: {tree_element_list[processed_task_number].user_intent}
-info: {tree_element_list[processed_task_number].information}'''
+info: {tree_element_list[processed_task_number].information}
+'''
 
         assistant_prompt = ''''''
 
@@ -85,7 +88,12 @@ info: {tree_element_list[processed_task_number].information}'''
     )
     ai_response = response['choices'][0]['message']['content']
 
-    print(ai_response)
+    # トークンアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('should_task_breakdown')
+
     if ai_response == '0':
         return False
     return True

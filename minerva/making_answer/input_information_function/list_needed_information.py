@@ -1,6 +1,7 @@
 import openai
 import re
 from ..task_tree_element import TaskTreeElement
+from ...token_class import Token
 
 
 def list_needed_information(openai_api_key: str, goal: str, tree_element_list: list[TaskTreeElement],
@@ -50,6 +51,11 @@ Answer in the form of [1. ~ \n2. ~ \n...]'''
     )
 
     ai_response = response['choices'][0]['message']['content']
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    # print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('list_needed_information')
 
     # Extract the needed information from the AI response
     needed_information_list = re.findall(r'^\d+\.\s(.+)', ai_response, re.MULTILINE)

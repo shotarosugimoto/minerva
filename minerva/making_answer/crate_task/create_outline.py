@@ -2,6 +2,8 @@ import openai
 from ..task_tree_element import TaskTreeElement
 import re
 
+from ...token_class import Token
+
 
 def create_outline(openai_api_key: str, goal: str, tree_element_list: list[TaskTreeElement],
                    processed_task_number: int):
@@ -56,6 +58,11 @@ example: [1. ~~ \n2. ~~ ...]'''
     )
 
     ai_response = response['choices'][0]['message']['content']
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    # print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('create_outline')
 
     output = re.findall(r'^\d+\.\s(.+)', ai_response, re.MULTILINE)
 
