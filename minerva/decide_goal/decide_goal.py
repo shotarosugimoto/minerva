@@ -12,22 +12,19 @@ class DecideGoal:
 
     # main.pyで最初に呼び出される。ゴールを規定する機能
     def redefine_goal(self):
-        tokens = 0
         selected_hypotheses = []
+
         while True:
-            # 仮説を生成
             generate_hypothesis = GenerateHypothesis(
                 openai_api_key=self.openai_api_key,
                 goal=self.goal,
                 information=self.information,
                 hypothesis_list=selected_hypotheses,
                 user_intent=self.user_intent_for_hypothesis,
-                token=tokens
             )
             print('Please wait a moment.')
-            # ミネルバが出した仮説を取捨選択する機能
-            hypothesis_list, tokens = generate_hypothesis.generate_hypothesis()
-            print(f'total tokens: {tokens}')
+
+            hypothesis_list = generate_hypothesis.generate_hypothesis()
             # ユーザーに仮説を選択させる
             selected_hypotheses = select_hypothesis(hypothesis_list)
 
@@ -43,8 +40,8 @@ class DecideGoal:
                     break
             # 情報が入力されたら、選択された仮説と追加情報をuser intentに入れて新たに仮説を生成するループに戻る
             else:
-                user_intent_for_hypothesis = new_intent + ', '.join(selected_hypotheses)
-            print(f"user_intent_for_hypothesis: {user_intent_for_hypothesis}")
+                self.user_intent_for_hypothesis = new_intent + ', '.join(selected_hypotheses)
+            print(f"user_intent_for_hypothesis: {self.user_intent_for_hypothesis}")
             continue
 
         # 選択された仮説を要約して明確な目標を作成
@@ -55,15 +52,13 @@ class DecideGoal:
                 information=self.information,
                 hypothesis_list=selected_hypotheses,
                 user_intent=self.user_intent_for_summarize,
-                token=tokens
             )
             print('情報の提供ありがとうございます！\n')
             print('最終的なアウトプットのイメージを考えていますので、少々お待ちください。\n')
-            summarize_result, tokens = summarize_hypothesis.create_summarize()
+            summarize_result = summarize_hypothesis.create_summarize()
 
             print('こちらが、私が今考えているアウトプットのイメージです:')
             print(f'{summarize_result}\n')
-            print(f'total tokens: {tokens}')
 
             user_answer = input('このアウトプットの形で大丈夫な場合は 0 を入力し、そうでない場合は 1 を入力してください')
             # 最終的にはここをマニュアルで編集も可能にしたい
@@ -75,7 +70,7 @@ class DecideGoal:
             # 新たな目標を生成するための追加情報を入力させる
             self.user_intent_for_summarize = input('より正確なアウトプットイメージを作るために追加情報を入力してください:')
 
-        return summarize_result, tokens
+        return summarize_result
 
 
 # redefine_goalで呼び出される。ミネルバが出した仮説を取捨選択する機能

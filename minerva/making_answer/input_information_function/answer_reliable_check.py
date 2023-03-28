@@ -1,5 +1,7 @@
 import openai
 
+from minerva.token_class import Token
+
 
 def answer_reliable_check(openai_api_key: str, task: str, needed_information: str, answer: str):
     openai.api_key = openai_api_key
@@ -30,4 +32,10 @@ need info ans: {answer}'''
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    # print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('answer_reliable_check')
+
     return ai_response

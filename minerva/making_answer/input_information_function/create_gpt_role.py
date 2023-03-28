@@ -1,5 +1,7 @@
 import openai
 
+from minerva.token_class import Token
+
 
 def create_gpt_role(openai_api_key: str, task: str, needed_information: str, questions: str):
 
@@ -39,4 +41,10 @@ role: 今からあなたに決めてもらいます'''
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    # print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('create_gpt_role')
+
     return ai_response

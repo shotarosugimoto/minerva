@@ -1,5 +1,6 @@
 import openai
 from ..task_tree_element import TaskTreeElement
+from ...token_class import Token
 
 
 def solve_task(openai_api_key: str, goal: str, tree_element_list: list[TaskTreeElement], processed_task_number: int,
@@ -26,5 +27,11 @@ def solve_task(openai_api_key: str, goal: str, tree_element_list: list[TaskTreeE
     )
 
     ai_response = response['choices'][0]['message']['content']
+
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('solve_task')
 
     tree_element_list[processed_task_number].answer = ai_response
