@@ -21,18 +21,23 @@ class InputInformationFunction:
         self.now_task_element = tree_element_list[processed_task_number]
 
     def iif_process(self):
-        print('sssss')
+        print('IIFに入ります')
         needed_information_list = list_needed_information(openai_api_key=self.openai_api_key, goal=self.goal,
                                                           tree_element_list=self.tree_element_list,
                                                           processed_task_number=self.processed_task_number)
 
         summarized_answer_list = []
+        # 一旦need info の処理の変更が終わってからやります
+        # need infoごとにやるんじゃなくて、ツール選択は一気にやる、その後に分けたい
         for needed_information in needed_information_list:
             use_tool = select_tool(openai_api_key=self.openai_api_key, goal=self.goal,
                                    now_task_element=self.now_task_element, needed_information=needed_information)
-            questions = create_questions(openai_api_key=self.openai_api_key, now_task_element=self.now_task_element,
+
+            questions = create_questions(openai_api_key=self.openai_api_key, goal=self.goal, now_task_element=self.now_task_element,
                                          needed_information=needed_information, tool=use_tool)
             answers: str
+            # ここでUなのかGなのかでuser inputに回すリストと、gptに渡すリストに分ける
+            # gptの方はリストごと渡して、一気にrole与えて、一気に回答させる
             if use_tool == 'user_input':
                 answers = answer_questions_by_user(goal=self.goal, needed_information=needed_information,
                                                    questions=questions)

@@ -84,6 +84,7 @@ def select_hypothesis(hypothesis_list):
     print("最終的に私が作成するものは以下のようなものでよろしいでしょうか？\nここで選択されなかった仮説は破棄され、選択された仮説をもとに最終的なアウトプットイメージを出力します")
     for num in range(len(hypothesis_list)):
         print(f'{num + 1}. {hypothesis_list[num]}')
+        print("\n")
     for num in range(len(hypothesis_list)):
         print(f'{num + 1}. {hypothesis_list[num]}')
         user_input = input('Enter Y if you accept this hypothesis, N if you do not.')

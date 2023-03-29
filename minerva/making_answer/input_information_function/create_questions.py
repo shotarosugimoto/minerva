@@ -2,13 +2,15 @@ from ..task_tree_element import TaskTreeElement
 import openai
 
 
-def create_questions(openai_api_key: str, now_task_element: TaskTreeElement, needed_information: str, tool: str,):
+def create_questions(openai_api_key: str, goal: str, now_task_element: TaskTreeElement, needed_information: str, tool: str,):
 
     openai.api_key = openai_api_key
 
     system_input = f'''
-{now_task_element.task}:現在解きたい課題です
-{needed_information}:{now_task_element.task}を解くために必要な情報です
+[goal] = {goal}
+[current task] = {now_task_element.task}
+Now you are doing [current task] to achieve [goal].
+{needed_information}は{now_task_element.task}をこなすために必要な情報です
 {tool}:{needed_information}をとってくる際に使うツールです'''
 
     assistant_prompt = '''

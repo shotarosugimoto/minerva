@@ -23,17 +23,13 @@ before starting the project.
 # output lang: jp
 """
         self.user_prompt = f"""
-From the {hypothesis_list}, please provide an outline of the outputs that Minerva should create.
+From {hypothesis_list}, think about what the user wants from Minerva and output what Minerva will create from now on for what.
 # output lang: jp
 """
         
         self.assistant_prompt = f"""
-        1. (title): (contents)
-        2. (title): (contents)
-        3. (title): (contents)
-        4. (title): (contents)
-        5. (title): (contents)
-        ...
+I will make ~ for ~.
+...
         """
         self.messages = [
             {"role": "system", "content": self.system_input},

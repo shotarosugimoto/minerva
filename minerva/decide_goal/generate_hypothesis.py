@@ -19,10 +19,10 @@ class GenerateHypothesis:
 Your name is Minerva, and you're an AI that helps the user do their jobs.
 The task is to match the outputs that the user wants with the outputs that 
 Minerva will produce before starting the project.
-{goal}
-{information}
-{user_intent_prompt}
-{hypothesis_list}
+[goal] = {goal}
+[information] = {information}
+[user intent] = {user_intent_prompt}
+[selected hypothesis] = {hypothesis_list}
 # output lang: jp
 '''
 
@@ -33,9 +33,10 @@ Minerva will produce before starting the project.
 '''
 
         self.user_prompt = f'''
-predict what output the user is looking for and come up with 3 hypotheses in japanese, with reference to {goal} 
-and {information} and {user_intent_prompt}
+predict what output the user is looking for and come up with 3 hypotheses in japanese, with reference to [goal] 
+and [information] and [user intent] and [selected hypothesis]
 # output lang: jp
+# output example: [1. ~\n2. ~\n3. ~\n...]
 '''
 
         self.messages = [

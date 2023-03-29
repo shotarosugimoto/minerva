@@ -14,4 +14,4 @@ class TaskTreeElement(NodeMixin):
         self.user_intent = user_intent
         self.parent: TaskTreeElement = parent
         if children:
-            self.children: TaskTreeElement = children
+            self.children: tuple[TaskTreeElement] = children
