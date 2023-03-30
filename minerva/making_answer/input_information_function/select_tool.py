@@ -6,55 +6,67 @@ from ...token_class import Token
 
 def select_tool(openai_api_key: str, goal: str, now_task_element: TaskTreeElement, needed_information: str):
     openai.api_key = openai_api_key
-    if now_task_element.information != '':
-        information_prompt = f'''
-{now_task_element.information}は、{now_task_element.task}を解くために必要であり、参照できる情報である。
-{needed_information}は、{now_task_element.task}を解く際に、現在の{now_task_element.information}以外に必要な情報です。'''
-    else:
-        information_prompt = f'''
-{needed_information}は、{now_task_element.task}を解く際に必要な情報です。'''
 
     tool_character = '''
-userに聞く情報
-・userしか正確な情報は持っていないと思われる情報
-・userが知っている情報であるとともに、正確性に関して確認が必要な場合がある情報
-・主観的な情報や個人情報など、user自身の経験や感情に関する情報
-・userの知識や経験に関する情報
-・userの情報や数値など、正確性が重要視される情報
+Information that you should ask the user:
+・Information that only the user may have accurate information
+・Information that is known to the user and may need to be verified for accuracy
+・Information about the user's own knowledge, experience, or feelings, such as subjective information or personal information
+・Information about which accuracy is important, such as user information and numerical values.
+Information that should be asked to GPT-3.5：
+・Information that the user does not seem to know
+・Information available online, such as objective information, general knowledge, or expertise in a particular field
+    '''
 
-GPT-3.5に聞く情報
-・userが知らないと思われる情報
-・客観的な情報や一般的な知識、特定の分野の専門知識など、オンライン上で入手可能な情報
+    if now_task_element.information != '':
+        system_input = f'''
+Your name is Minerva, and you're an AI that helps the user do their jobs.
+[goal] = {goal}
+[Owned information] = {now_task_element.information}
+[current task] = {now_task_element.task}
+[needed information] ={needed_information}
+Keep in mind [goal].
+Now you are doing [current task] to achieve [goal].
+[Owned information] is information that is needed and available for reference when solving [current task].
+[needed information] is information other than [Owned information] that is needed to solve [current task].
+[tool character] is a description of the media from which the information can currently be retrieved.
 '''
 
-    system_input = f'''
-{goal}は最終的な課題です。
-{now_task_element.task}は、{goal}を求めるために、現在取り組んでいる課題である。
-{information_prompt}
-
-toolには　['userに聞く情報', 'GPT-3.5に聞く情報']の二つがあります。
-以下は、それぞれのtoolに適した情報の例です
-userに聞く情報
-・userしか正確な情報は持っていないと思われる情報
-・userが知っている情報であるとともに、正確性に関して確認が必要な場合がある情報
-・主観的な情報や個人情報など、user自身の経験や感情に関する情報
-・userの知識や経験に関する情報
-・userの情報や数値など、正確性が重要視される情報
-
-GPT-3.5に聞く情報
-・userが知らないと思われる情報
-・客観的な情報や一般的な知識、特定の分野の専門知識など、オンライン上で入手可能な情報
-
-上の例を参考に、{needed_information}を得るためにどのtoolを使うべきか決めてください
+    # informationが空の時
+    else:
+        system_input = f'''
+Your name is Minerva, and you're an AI that helps the user do their jobs.
+[goal] = {goal}
+[current task] = {now_task_element.task}
+[tool character] = {tool_character}
+[needed information] ={needed_information}
+Keep in mind [goal]
+Now you are doing [current task] to achieve [goal].
+[needed information] is information that is needed to solve [current task].
+[tool character] is a description of the media from which the information can currently be retrieved.
 '''
+
+    # ここから共通
+    assistant_prompt = f'''
+1. G
+2. U
+3. U
+...
+    '''
+
     user_prompt = f'''
-{tool_character}を参考にして、{needed_information}が,「userに聞く情報」なのか、「GPT3.5に聞く情報」なのかを判断しなさい
-「userに聞く情報」である場合は、0のみ出力してください
-「GPT3.5に聞く情報」である場合は、1のみ出力してください
-言語は書かず、数字のみ出力しなさい。
+Using [tool character] as a reference, 
+determine whether each [needed information] are "Information that you should ask the user" 
+or "Information that should be asked to GPT-3.5".
+If it is "Information that you should ask the user", output only U.
+If it is "Information that should be asked to GPT-3.5", output only G
+Do not write the language, output only numbers.
+# output example: [1. ~\n2. ~\n3. ~\n...]
 '''
+
     messages = [
         {"role": "system", "content": system_input},
+        {"role": "assistant", "content": assistant_prompt},
         {"role": "user", "content": user_prompt}
     ]
     response = openai.ChatCompletion.create(
@@ -64,16 +76,18 @@ GPT-3.5に聞く情報
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
-
     # トークン数のアウトプットの処理
     token = response["usage"]["total_tokens"]
     # print(f'usage tokens:{token}')
     use_token = Token(token)
     use_token.output_token_information('select_tool')
 
-    if ai_response == '0':
-        return 'user_input'
-    elif ai_response == '1':
-        return 'GPT-3.5'
+    tools = []
+    for char in ai_response:
+        if char == "G" or char == "U":
+            tools.append(char)
+
+    if len(tools) == len(needed_information):
+        return tools
     else:
-        raise ValueError('not 0 or 1')
+        raise ValueError(f"ツールが正確に選択されませんでした")
