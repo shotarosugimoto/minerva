@@ -7,15 +7,15 @@ def select_tool(openai_api_key: str, goal: str, now_task_element: TaskTreeElemen
     openai.api_key = openai_api_key
 
     tool_character = '''
-    Information that you should ask the user:
-    ・Information that only the user may have accurate information
-    ・Information that is known to the user and may need to be verified for accuracy
-    ・Information about the user's own knowledge, experience, or feelings, such as subjective information or personal information
-    ・Information about which accuracy is important, such as user information and numerical values.
+Information that you should ask the user:
+・Information that only the user may have accurate information
+・Information that is known to the user and may need to be verified for accuracy
+・Information about the user's own knowledge, experience, or feelings, such as subjective information or personal information
+・Information about which accuracy is important, such as user information and numerical values.
 
-    Information that should be asked to GPT-3.5：
-    ・Information that the user does not seem to know
-    ・Information available online, such as objective information, general knowledge, or expertise in a particular field
+Information that should be asked to GPT-3.5：
+・Information that the user does not seem to know
+・Information available online, such as objective information, general knowledge, or expertise in a particular field
     '''
 
     if now_task_element.information != '':
@@ -24,10 +24,13 @@ Your name is Minerva, and you're an AI that helps the user do their jobs.
 [goal] = {goal}
 [Owned information] = {now_task_element.information}
 [current task] = {now_task_element.task}
-Keep in mind [goal]
+[needed information] ={needed_information}
+Keep in mind [goal].
 Now you are doing [current task] to achieve [goal].
 [Owned information] is information that is needed and available for reference when solving [current task].
-{needed_information} is information other than [Owned information] that is needed to solve [current task].'''
+[needed information] is information other than [Owned information] that is needed to solve [current task].
+[tool character] is a description of the media from which the information can currently be retrieved.
+'''
 
     # informationが空の時
     else:
@@ -36,10 +39,12 @@ Your name is Minerva, and you're an AI that helps the user do their jobs.
 [goal] = {goal}
 [current task] = {now_task_element.task}
 [tool character] = {tool_character}
+[needed information] ={needed_information}
 Keep in mind [goal]
 Now you are doing [current task] to achieve [goal].
-{needed_information} is information that is needed to solve [current task].
-[tool character] is'''
+[needed information] is information that is needed to solve [current task].
+[tool character] is a description of the media from which the information can currently be retrieved.
+'''
 
     # ここから共通
     assistant_prompt = f'''
@@ -50,8 +55,8 @@ Now you are doing [current task] to achieve [goal].
     '''
 
     user_prompt = f'''
-Using {tool_character} as a reference, 
-determine whether each {needed_information} are "Information that you should ask the user" 
+Using [tool character] as a reference, 
+determine whether each [needed information] are "Information that you should ask the user" 
 or "Information that should be asked to GPT-3.5".
 If it is "Information that you should ask the user", output only U.
 If it is "Information that should be asked to GPT-3.5", output only G

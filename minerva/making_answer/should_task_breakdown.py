@@ -3,73 +3,74 @@ import openai
 
 
 def should_task_breakdown(openai_api_key: str, goal: str, tree_element_list: list[TaskTreeElement],
-                          processed_task_number: int):
+                          processed_task_number: int, initial_information: str):
     openai.api_key = openai_api_key
 
     criteria = '''
-「assistantがステップに分けずに[task]の答えを出せる場合」
-    ・ステップを踏まなくても、答えが出る場合
-    ・ステップを踏んだとしても、ステップを踏まなかった場合と答えが変わらない場合
-「assistantがステップを踏んだ方が、{task}を分解する方がいい場合」
-    ・ステップを踏まないと答えが出ない場合
-    ・ステップを踏んだ方が、ステップを踏まなかった時よりも、深く示唆深く正確な答えが出せる場合'''
+Decision Criteria
+・When it is considered that Minerva can perform the task without decomposing the task.
+・If Minerva's answer is considered to be the same even if the task is decomposed as if the task is not decomposed.
+→Do not decompose the task, but perform the current task.
+
+・If Minerva cannot complete the task without decomposing the task
+・If Minerva is able to give a more suggestive and accurate answer when the task is broken down than when the task is not broken down
+→Decompose the task
+'''
 
     if len(tree_element_list) == 1:
-        # 後々のために分けたけど今は書き分けしてないからかき分けて
         system_input = f'''
-[goal]:最終的に解きたい課題です
-[task]:現在解きたい課題です
-[position]:現在、[goal]を解くうえで[task]が現在どこに位置しているのかを表しています
-[user-intent]:[task]をassistantが解くときの、userからの要望
-[info]:[task]を解くときに必要な情報です
-
-goal: {goal}
-task: {tree_element_list[processed_task_number]}
-position: ゴールを{tree_element_list[processed_task_number].depth}分割した場所に位置しています
-user-intent: {tree_element_list[processed_task_number].user_intent}
-info: {tree_element_list[processed_task_number].information}'''
-
-        assistant_prompt = ''''''
-
-        user_prompt = f'''
-現在、assistantが[info]を用いて[task]を解く段階です。
-この時、assistantが[task]をステップに分けずに実行できるか、ステップに分けないと実行できないのか、{criteria}を参考にして判断してください。
-「assistantがステップに分けずに[task]の答えを出せる場合」、'0'のみ出力してください。
-「assistantがステップを踏んだ方が、[task]を分解する方がいい場合」、'1'のみ出力してください。
-言語は書かず、数字のみ記載してください
-数字のみの記載です。'''
-
+Your name is Minerva, and you're an AI that helps the user do their jobs.
+[goal] = {goal}
+[current task] = create the best output outline to achieve [goal]
+[Owned information] = {tree_element_list[0].information}
+[user intent] = {tree_element_list[0].user_intent}
+Keep in mind [goal].
+Now you are doing [current task].
+[Owned information] is information that is needed and available for reference when solving [current task].
+[user intent] is user\'s intent, so keep this request in mind when answering.
+Currently, [current task] is divided {tree_element_list[processed_task_number].depth} times from the final output.
+        '''
     else:
         current_task = tree_element_list[processed_task_number]
-        parents_task: TaskTreeElement = current_task.parent
-        children_task: list[TaskTreeElement] = parents_task.children
-        # 保留
+        parents_task = current_task.parent
+        children_task_list = parents_task.children
+        all_information = ''
+        task_and_answer_prompt = ''
+        all_information += current_task.information + '\n'
+        all_information += parents_task.information + '\n'
+        processed_order = current_task.path
+        for element in children_task_list:
+            all_information += element.information + '\n'
+            if element.process_order < processed_order:
+                task_and_answer_prompt += f'task:{element.task}, answer:{element.answer}'
+            if element.process_order > processed_order:
+                task_and_answer_prompt += f'task:{element.task}, answer: not yet'
+
         system_input = f'''
-        [goal]:最終的に解きたい課題です
-        [task]:現在解きたい課題です
-        [position]:現在、[goal]を解くうえで[task]が現在どこに位置しているのかを表しています
-        [user-intent]:[task]をassistantが解くときの、userからの要望
-        [info]:[task]を解くときに必要な情報です
+Your name is Minerva, and you're an AI that helps the user do their jobs.
+[goal] = {goal}
+[current task] = {tree_element_list[processed_task_number]}
+[Owned information] = {all_information}
+[user intent] = {parents_task.user_intent}
+Keep in mind [goal].
+Now you are doing [current task].
+[Owned information] is information that is needed and available for reference when solving [current task].
+[user intent] is user\'s intent, so keep this request in mind when answering.
+{task_and_answer_prompt} are tasks and their answers on the same layer as [current task]
+, which are decomposed tasks to solve {parents_task}.
+Currently, [current task] is divided {tree_element_list[processed_task_number].depth} times from the final output.
+    '''
 
-        goal: {goal}
-        task: {tree_element_list[processed_task_number]}
-        position: ゴールを{tree_element_list[processed_task_number].depth}分割した場所に位置しています
-        user-intent: {tree_element_list[processed_task_number].user_intent}
-        info: {tree_element_list[processed_task_number].information}'''
+    assistant_prompt = '''
+0
+    '''
 
-        assistant_prompt = '''
-        「assistantがステップに分けずに[task]の答えを出せる場合」、0のみ出力してください。
-        「assistantがステップを踏んだ方が、[task]を分解する方がいい場合」、1のみ出力してください。
-        言語は書かず、数字のみ記載してください
-        数字のみの記載です。'''
-
-        user_prompt = f'''
-        現在、assistantが[info]を用いて[task]を解く段階です。
-        この時、assistantが[task]をステップに分けずに実行できるか、ステップに分けないと実行できないのか、{criteria}を参考にして判断してください。
-        「assistantがステップに分けずに[task]の答えを出せる場合」、'0'のみ出力してください。
-        「assistantがステップを踏んだ方が、[task]を分解する方がいい場合」、'1'のみ出力してください。
-        言語は書かず、数字のみ記載してください
-        数字のみの記載です。'''
+    user_prompt = f'''
+Determine whether Minerva can execute [current task] without decomposing it or without decomposing it with reference to {criteria}.
+If Minerva does not need to decompose [current task], output only '0'.
+If Minerva should decompose [current task], please output only '1'.
+Please do not write the language, only numbers.
+Only numbers are written.'''
 
     messages = [
         {"role": "system", "content": system_input},
@@ -88,4 +89,7 @@ info: {tree_element_list[processed_task_number].information}'''
     print(ai_response)
     if ai_response == '0':
         return False
-    return True
+    elif ai_response == '1':
+        return True
+    else:
+        raise ValueError(f"0、1以外の回答が返ってきました")

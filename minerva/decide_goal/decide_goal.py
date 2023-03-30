@@ -63,7 +63,6 @@ class DecideGoal:
 
             print('こちらが、私が今考えているアウトプットのイメージです:')
             print(f'{summarize_result}\n')
-            print(f'total tokens: {tokens}')
 
             user_answer = input('このアウトプットの形で大丈夫な場合は 0 を入力し、そうでない場合は 1 を入力してください')
             # 最終的にはここをマニュアルで編集も可能にしたい
@@ -75,7 +74,7 @@ class DecideGoal:
             # 新たな目標を生成するための追加情報を入力させる
             self.user_intent_for_summarize = input('より正確なアウトプットイメージを作るために追加情報を入力してください:')
 
-        return summarize_result, tokens
+        return summarize_result
 
 
 # redefine_goalで呼び出される。ミネルバが出した仮説を取捨選択する機能

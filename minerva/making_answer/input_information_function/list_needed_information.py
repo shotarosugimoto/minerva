@@ -8,12 +8,11 @@ def list_needed_information(openai_api_key: str, goal: str, tree_element_list: l
     openai.api_key = openai_api_key
 
     if len(tree_element_list) == 1:
-        information_prompt = {tree_element_list[0].information}
         system_input = f'''
 Your name is Minerva, and you're an AI that helps the user do their jobs.
 [goal] = {goal}
 [current task] = create the best output outline to achieve [goal]
-[owned information] = {information_prompt}
+[owned information] = {tree_element_list[0].information}
 Keep in mind [goal]
 Now you are doing the task that [current task]
 # output lang: jp

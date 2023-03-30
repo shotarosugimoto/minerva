@@ -7,19 +7,18 @@ class EnoughInformation:
     def __init__(self, openai_api_key: str, goal: str, tree_element_list: list[TaskTreeElement],
                  processed_task_number: int):
         openai.api_key = openai_api_key
-        # goal = "What the user wants to create with Minerva is" + initial_goal , "Minerva's output is used to" + initial_purpose
         if len(tree_element_list) == 1:  # 一番最初のアウトラインを作るところ
             print("最初のアウトラインを作るところ、")
-            information_prompt = tree_element_list[0].information
 
             self.system_input = f'''
 Your name is Minerva, and you're an AI that helps the user do their jobs.
 [goal] = {goal}
 [current task] = create the best output outline to achieve [goal]
-[owned information] = {information_prompt}
+[owned information] = {tree_element_list[0].information}
 Keep in mind [goal].
-Now you are doing the task that [current task].
+Now you are doing [current task].
             '''
+            print(f"system_input:{self.system_input}")
 
         else:  # 最初以外のタスクを分解する前のenough info
             current_task = tree_element_list[processed_task_number]
@@ -42,10 +41,12 @@ Your name is Minerva, and you're an AI that helps the user do their jobs.
 [goal] = {goal}
 [current task] = {current_task}
 [ownd information] = {all_information}
-Keep in mind [goal]
+Keep in mind [goal].
+Now you are doing [current task].
 {task_and_answer_prompt} are tasks and their answers on the same layer as [current task]
-, which are decomposed tasks to solve {parents_task}
+, which are decomposed tasks to solve {parents_task}.
             '''
+            print(f"system_input:{self.system_input}")
         # ここから共通
         self.assistant_prompt = f'''
         1Q
