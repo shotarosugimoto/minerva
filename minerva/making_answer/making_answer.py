@@ -7,8 +7,6 @@ from minerva.making_answer.solve_task.crate_gpt_role import crate_gpt_role
 from minerva.making_answer.solve_task.solve_task import solve_task
 from minerva.making_answer.create_answer_from_bottom_elements import create_answer_from_bottom_elements
 
-from anytree import RenderTree
-
 
 class MakingAnswer:
     tree_element_list: list[TaskTreeElement] = []
@@ -34,21 +32,36 @@ class MakingAnswer:
                                                    processed_task_number=processed_task_number)
 
             if not enough_information.response_result():
+                # 情報の補完を行う機能
                 input_information_function \
                     = InputInformationFunction(openai_api_key=self.openai_api_key, goal=self.initial_goal,
                                                tree_element_list=self.tree_element_list,
                                                processed_task_number=processed_task_number)
                 input_information_function.iif_process()
 
+            # テストのために両方IIFに入れてます
+            else:
+                input_information_function \
+                    = InputInformationFunction(openai_api_key=self.openai_api_key, goal=self.initial_goal,
+                                               tree_element_list=self.tree_element_list,
+                                               processed_task_number=processed_task_number)
+                input_information_function.iif_process()
+
+            print("少々お待ちください...\nタスクを細分化すべきか判断しています。")
+
+            # 分解するかどうか判断
             breakdown_response = should_task_breakdown(openai_api_key=self.openai_api_key, goal=self.initial_goal,
                                                        tree_element_list=self.tree_element_list,
                                                        processed_task_number=processed_task_number)
             if not breakdown_response:
+                print("タスクを細分化する必要がないため、次に進みます")
                 return processed_task_number, 1
 
+            print("タスクを細分化します")
             create_task = CreateTask(openai_api_key=self.openai_api_key, goal=self.initial_goal,
                                      tree_element_list=self.tree_element_list,
                                      processed_task_number=processed_task_number)
+            print("少々お待ちください...\nタスクを細分化しています。")
             new_task_list = create_task.create_task()
             next_processed_task_number = self.task_number
             process_order = 0
@@ -67,6 +80,7 @@ class MakingAnswer:
             return next_processed_task_number, 0
 
         if step_number == 1:
+            print("ミネルバに役割を与えています。\n")
             gpt_role = crate_gpt_role(openai_api_key=self.openai_api_key,
                                       now_task_element=self.tree_element_list[processed_task_number])
             solve_task(openai_api_key=self.openai_api_key, goal=self.initial_goal,

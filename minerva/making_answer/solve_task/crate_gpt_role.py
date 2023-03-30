@@ -5,24 +5,20 @@ from ...token_class import Token
 
 def crate_gpt_role(openai_api_key, now_task_element: TaskTreeElement):
     openai.api_key = openai_api_key
-    system_input = f'''
-[task]:現在解きたい課題です
-[information]:[task]を解くために必要な情報です
-[role]:[question]にこたえる時にアシスタントに与えられる役割
 
-task: {now_task_element.task}
-information: {now_task_element.information}
-role: 今からあなたに決めてもらいます'''
+    system_input = f'''
+    Your name is Minerva, and you're an AI that helps the user do their jobs.
+    [current task] = {now_task_element.task}
+    [Owned information] = {now_task_element.information}
+        '''
 
     user_prompt = f'''
-[task]を解くにあたって詳しい立場の人間は、どういう人でしょうか。
-ふさわしものを一つだけお答えください。
-
-[output style]
-～に詳しい人
-名詞だけ記述
-文章では書かない
-一つのみ記載'''
+    Please tell us what is the most appropriate job title for the [current task].
+    Please tell us specifically what abilities, skills, and experience would best fit the position.
+    Nouns only
+    Do not write in sentences
+    output example: [role: ~\nskills: ~]
+    '''
 
     messages = [
         {"role": "system", "content": system_input},
