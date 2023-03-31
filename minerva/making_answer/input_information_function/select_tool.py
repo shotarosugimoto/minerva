@@ -4,14 +4,19 @@ import openai
 from ...token_class import Token
 
 
-def select_tool(openai_api_key: str, goal: str, now_task_element: TaskTreeElement, needed_information: str):
+def select_tool(openai_api_key: str, goal: str, now_task_element: TaskTreeElement, needed_information_list: list[str]):
     openai.api_key = openai_api_key
+
+    needed_information = ''
+    for i in range(len(needed_information_list)):
+        needed_information += f'{i+1}: {needed_information_list[i]}'
 
     tool_character = '''
 Information that you should ask the user:
 ・Information that only the user may have accurate information
 ・Information that is known to the user and may need to be verified for accuracy
-・Information about the user's own knowledge, experience, or feelings, such as subjective information or personal information
+・Information about the user's own knowledge, experience, or feelings, such as subjective information or 
+personal information
 ・Information about which accuracy is important, such as user information and numerical values.
 Information that should be asked to GPT-3.5：
 ・Information that the user does not seem to know
@@ -87,7 +92,7 @@ Do not write the language, output only numbers.
         if char == "G" or char == "U":
             tools.append(char)
 
-    if len(tools) == len(needed_information):
+    if len(tools) == len(needed_information_list):
         return tools
     else:
         raise ValueError(f"ツールが正確に選択されませんでした")
