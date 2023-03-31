@@ -1,6 +1,7 @@
 from ..task_tree_element import TaskTreeElement
 import openai
-import re
+
+from ...token_class import Token
 
 
 def select_tool(openai_api_key: str, goal: str, now_task_element: TaskTreeElement, needed_information: str):
@@ -12,7 +13,6 @@ Information that you should ask the user:
 ・Information that is known to the user and may need to be verified for accuracy
 ・Information about the user's own knowledge, experience, or feelings, such as subjective information or personal information
 ・Information about which accuracy is important, such as user information and numerical values.
-
 Information that should be asked to GPT-3.5：
 ・Information that the user does not seem to know
 ・Information available online, such as objective information, general knowledge, or expertise in a particular field
@@ -76,6 +76,11 @@ Do not write the language, output only numbers.
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    # print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('select_tool')
 
     tools = []
     for char in ai_response:
@@ -86,4 +91,3 @@ Do not write the language, output only numbers.
         return tools
     else:
         raise ValueError(f"ツールが正確に選択されませんでした")
-

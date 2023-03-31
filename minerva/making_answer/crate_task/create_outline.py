@@ -2,25 +2,27 @@ import openai
 from ..task_tree_element import TaskTreeElement
 import re
 
+from ...token_class import Token
+
 
 def create_outline(openai_api_key: str, goal: str, tree_element_list: list[TaskTreeElement],
-                   processed_task_number: int, initial_information: str):
+                   processed_task_number: int):
     openai.api_key = openai_api_key
 
     if len(tree_element_list) == 1:
         information_prompt = tree_element_list[0].information
         system_input = f'''
-Your name is Minerva, and you're an AI that helps the user do their jobs.
-[goal] = {goal}
-[current task] = create the best output outline to achieve [goal]
-[Owned information] = {information_prompt}
-[user intent] = {initial_information}
-Keep in mind [goal].
-Now you are doing [current task].
-[Owned information] is information that is needed and available for reference when solving [current task].
-[user intent] is user\'s intent, so keep this request in mind when answering.
-# output lang: jp
-                '''
+    Your name is Minerva, and you're an AI that helps the user do their jobs.
+    [goal] = {goal}
+    [current task] = create the best output outline to achieve [goal]
+    [Owned information] = {information_prompt}
+    [user intent] = {tree_element_list[0].user_intent}
+    Keep in mind [goal].
+    Now you are doing [current task].
+    [Owned information] is information that is needed and available for reference when solving [current task].
+    [user intent] is user\'s intent, so keep this request in mind when answering.
+    # output lang: jp
+                    '''
 
     else:
         current_task = tree_element_list[processed_task_number]
@@ -39,35 +41,35 @@ Now you are doing [current task].
                 task_and_answer_prompt += f'task:{element.task}, answer: not yet'
 
         system_input = f'''
-Your name is Minerva, and you're an AI that helps the user do their jobs.
-[goal] = {goal}
-[current task] = {tree_element_list[processed_task_number]}
-[Owned information] = {tree_element_list[processed_task_number].information}
-[user intent] = {parents_task.user_intent}
-Keep in mind [goal].
-Now you are doing [current task].
-[Owned information] is information that is needed and available for reference when solving [current task].
-[user intent] is user\'s intent, so keep this request in mind when answering.
-{task_and_answer_prompt} are tasks and their answers on the same layer as [current task]
-, which are decomposed tasks to solve {parents_task}.
-Currently, [current task] is divided {tree_element_list[processed_task_number].depth} times from the final output.
-# output lang: jp
-        '''
+    Your name is Minerva, and you're an AI that helps the user do their jobs.
+    [goal] = {goal}
+    [current task] = {tree_element_list[processed_task_number]}
+    [Owned information] = {tree_element_list[processed_task_number].information}
+    [user intent] = {parents_task.user_intent}
+    Keep in mind [goal].
+    Now you are doing [current task].
+    [Owned information] is information that is needed and available for reference when solving [current task].
+    [user intent] is user\'s intent, so keep this request in mind when answering.
+    {task_and_answer_prompt} are tasks and their answers on the same layer as [current task]
+    , which are decomposed tasks to solve {parents_task}.
+    Currently, [current task] is divided {tree_element_list[processed_task_number].depth} times from the final output.
+    # output lang: jp
+            '''
 
     assistant_prompt = f'''
-1. ~~
-2. ~~
-3. ~~
-4. ~~
-...'''
+    1. ~~
+    2. ~~
+    3. ~~
+    4. ~~
+    ...'''
 
     user_prompt = f'''
-Think about what steps you need to break down into in order to do [current task]
-Structure the task in a logical sequence
-Do not write anything other than the issues and steps.
-# output lang: jp
-example: [1. ~~ \n2. ~~ ...]
-    '''
+    Think about what steps you need to break down into in order to do [current task]
+    Structure the task in a logical sequence
+    Do not write anything other than the issues and steps.
+    # output lang: jp
+    example: [1. ~~ \n2. ~~ ...]
+        '''
 
     messages = [
         {"role": "system", "content": system_input},
@@ -84,6 +86,11 @@ example: [1. ~~ \n2. ~~ ...]
     )
 
     ai_response = response['choices'][0]['message']['content']
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    # print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('create_outline')
 
     output = re.findall(r'^\d+\.\s(.+)', ai_response, re.MULTILINE)
 

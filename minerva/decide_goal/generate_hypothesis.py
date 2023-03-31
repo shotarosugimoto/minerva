@@ -1,28 +1,28 @@
 import openai
 import re
+from minerva.token_class import Token
 
 
 class GenerateHypothesis:
 
-    def __init__(self, openai_api_key: str, goal: str, information: str, hypothesis_list: list[str], user_intent: str,
-                 token: int = 0):
+    def __init__(self, openai_api_key: str, goal: str, information: str, hypothesis_list: list[str], user_intent: str,):
         openai.api_key = openai_api_key
-        self.token = token
         user_intent_prompt = ''
         if user_intent != '':
             user_intent_prompt = f'{user_intent} is user\'s intent, so keep this request in mind when answering.'
+        hypothesis_prompt = ''
         if hypothesis_list:
-            hypothesis_list = f'{hypothesis_list} is likely to be the output that is in line with the user\'s ' \
+            hypothesis_prompt = f'{hypothesis_list} is likely to be the output that is in line with the user\'s ' \
                               f'intentions, so refer to these'
 
         self.system_input = f'''
 Your name is Minerva, and you're an AI that helps the user do their jobs.
 The task is to match the outputs that the user wants with the outputs that 
 Minerva will produce before starting the project.
-[goal] = {goal}
-[information] = {information}
-[user intent] = {user_intent_prompt}
-[selected hypothesis] = {hypothesis_list}
+{goal}
+{information}
+{user_intent_prompt}
+{hypothesis_prompt }
 # output lang: jp
 '''
 
@@ -33,10 +33,9 @@ Minerva will produce before starting the project.
 '''
 
         self.user_prompt = f'''
-predict what output the user is looking for and come up with 3 hypotheses in japanese, with reference to [goal] 
-and [information] and [user intent] and [selected hypothesis]
+predict what output the user is looking for and come up with 3 hypotheses in japanese, with reference to {goal} 
+and {information} and {user_intent_prompt}
 # output lang: jp
-# output example: [1. ~\n2. ~\n3. ~\n...]
 '''
 
         self.messages = [
@@ -53,11 +52,14 @@ and [information] and [user intent] and [selected hypothesis]
             messages=self.messages
         )
         ai_response = response['choices'][0]['message']['content']
-        self.token += response["usage"]["total_tokens"]  # インスタンス変数を使って加算する
-        print(f'tokens:{response["usage"]["total_tokens"]}')
+        token = response["usage"]["total_tokens"]  # インスタンス変数を使って加算する
+        print(f'tokens:{token}')
+        use_token = Token(token)
+        use_token.output_token_information('generate_hypothesis')
+
         hypothesis = re.findall(r'^\d+\.\s(.+)', ai_response, re.MULTILINE)
 
         if len(hypothesis) == 3:
-            return hypothesis, self.token
+            return hypothesis
         else:
             raise ValueError(f"Expected 3 hypotheses, but found {len(hypothesis)}")

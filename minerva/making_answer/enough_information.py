@@ -1,5 +1,6 @@
 import openai
 from minerva.making_answer.task_tree_element import TaskTreeElement
+from minerva.token_class import Token
 
 
 class EnoughInformation:
@@ -46,7 +47,7 @@ Now you are doing [current task].
 {task_and_answer_prompt} are tasks and their answers on the same layer as [current task]
 , which are decomposed tasks to solve {parents_task}.
             '''
-            print(f"system_input:{self.system_input}")
+
         # ここから共通
         self.assistant_prompt = f'''
         1Q
@@ -73,7 +74,14 @@ just write  1"iQ" or "1".
             model="gpt-3.5-turbo",
             messages=self.messages
         )
+        # 確認用
+        print(f"system_input:{self.system_input}")
         ai_response = response['choices'][0]['message']['content']
+        # トークン数のアウトプットの処理
+        token = response["usage"]["total_tokens"]
+        print(f'usage tokens:{token}')
+        use_token = Token(token)
+        use_token.output_token_information('enough_information')
         if ai_response.strip() == "1":
             print("enough information")
             return True

@@ -1,11 +1,10 @@
 import openai
+from minerva.token_class import Token
 
 
 class SummarizeHypothesis:
-    def __init__(self, openai_api_key: str, goal: str, information: str, hypothesis_list: list[str], user_intent: str,
-                 token: int = 0):
+    def __init__(self, openai_api_key: str, goal: str, information: str, hypothesis_list: list[str], user_intent: str,):
         openai.api_key = openai_api_key
-        self.token = token
         information_prompt = ''
         if information != '':
             information_prompt = f'you have {information}.'
@@ -46,7 +45,9 @@ I will make ~ for ~.
         )
 
         ai_response = response['choices'][0]['message']['content']
-        self.token += response["usage"]["total_tokens"]  # インスタンス変数を使って加算する
+        token = response["usage"]["total_tokens"]  # インスタンス変数を使って加算する
+        print(f'usage tokens:{token}')
+        use_token = Token(token)
+        use_token.output_token_information('create_summarize')
 
-        print(f'usage tokens:{response["usage"]["total_tokens"]}')
-        return ai_response, self.token
+        return ai_response

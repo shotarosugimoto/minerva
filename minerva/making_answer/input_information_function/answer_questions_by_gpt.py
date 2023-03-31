@@ -1,5 +1,7 @@
 import openai
 
+from minerva.token_class import Token
+
 
 def answer_questions_by_gpt(openai_api_key: str, task: str, needed_information: str, questions: str, role: str):
 
@@ -45,4 +47,10 @@ Answer in the form of [1. ~ \n2. ~ \n...]
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    # print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('answer_questions_by_gpt')
+
     return ai_response

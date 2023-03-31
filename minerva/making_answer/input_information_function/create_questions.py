@@ -1,6 +1,8 @@
 from ..task_tree_element import TaskTreeElement
 import openai
 
+from ...token_class import Token
+
 
 def create_questions(openai_api_key: str, goal: str, now_task_element: TaskTreeElement, needed_information: str, tool: str,):
 
@@ -41,6 +43,11 @@ Answer in the form of [1. ~ \n2. ~ \n...]
         model="gpt-3.5-turbo",
         messages=messages
     )
+    # トークン数のアウトプットの処理
+    token = response["usage"]["total_tokens"]
+    # print(f'usage tokens:{token}')
+    use_token = Token(token)
+    use_token.output_token_information('create_questions')
 
     ai_response = response['choices'][0]['message']['content']
     return ai_response
