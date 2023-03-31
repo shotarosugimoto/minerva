@@ -42,7 +42,7 @@ def main():
     decide_goal = DecideGoal(openai_api_key=openai_api_key, goal=initial_goal, information=initial_information)
     new_goal = decide_goal.redefine_goal()
 
-    making_answer = MakingAnswer(openai_api_key=openai_api_key, initial_goal=new_goal,
+    making_answer = MakingAnswer(openai_api_key=openai_api_key, initial_goal=new_goal, user_intent=initial_goal,
                                  initial_information=initial_information)
 
     processed_task_number: int = 0
@@ -57,4 +57,3 @@ def main():
             break
 
     making_answer.print_final_answer()
-
