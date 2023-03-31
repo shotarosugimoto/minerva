@@ -11,13 +11,13 @@ from minerva.making_answer.create_answer_from_bottom_elements import create_answ
 class MakingAnswer:
     tree_element_list: list[TaskTreeElement] = []
 
-    def __init__(self, openai_api_key, initial_goal, initial_information):
+    def __init__(self, openai_api_key, initial_goal, initial_information, user_intent):
         self.openai_api_key = openai_api_key
         self.initial_goal = initial_goal
         self.initial_information = initial_information
         self.task_number = 0
         self.tree_element_list.append(TaskTreeElement(
-            number=self.task_number, task=initial_goal, tree_depth=0, process_order=0,
+            number=self.task_number, task=initial_goal, tree_depth=0, process_order=0, user_intent=user_intent,
             information=initial_information,))
         self.task_number += 1
 

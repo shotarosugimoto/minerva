@@ -25,41 +25,43 @@ class InputInformationFunction:
         needed_information_list = list_needed_information(openai_api_key=self.openai_api_key, goal=self.goal,
                                                           tree_element_list=self.tree_element_list,
                                                           processed_task_number=self.processed_task_number)
+        use_tool_list = select_tool(openai_api_key=self.openai_api_key, goal=self.goal,
+                                    now_task_element=self.now_task_element,
+                                    needed_information_list=needed_information_list)
 
         summarized_answer_list = []
-        # 一旦need info の処理の変更が終わってからやります
-        # need infoごとにやるんじゃなくて、ツール選択は一気にやる、その後に分けたい
-        for needed_information in needed_information_list:
-            use_tool = select_tool(openai_api_key=self.openai_api_key, goal=self.goal,
-                                   now_task_element=self.now_task_element, needed_information=needed_information)
+        for i in range(len(needed_information_list)):
 
-            questions = create_questions(openai_api_key=self.openai_api_key, goal=self.goal, now_task_element=self.now_task_element,
-                                         needed_information=needed_information, tool=use_tool)
+            questions = create_questions(openai_api_key=self.openai_api_key, now_task_element=self.now_task_element,
+                                         needed_information=needed_information_list[i], tool=use_tool_list[i])
             answers: str
             # ここでUなのかGなのかでuser inputに回すリストと、gptに渡すリストに分ける
             # gptの方はリストごと渡して、一気にrole与えて、一気に回答させる
-            if use_tool == 'user_input':
-                answers = answer_questions_by_user(goal=self.goal, needed_information=needed_information,
+            if use_tool_list[i] == 'user_input':
+                answers = answer_questions_by_user(goal=self.goal, needed_information=needed_information_list[i],
                                                    questions=questions)
             else:
                 gpt_role = create_gpt_role(openai_api_key=self.openai_api_key, task=self.now_task_element.task,
-                                           needed_information=needed_information, questions=questions)
+                                           needed_information=needed_information_list[i], questions=questions)
                 answers = answer_questions_by_gpt(openai_api_key=self.openai_api_key, task=self.now_task_element.task,
-                                                  needed_information=needed_information, questions=questions,
+                                                  needed_information=needed_information_list[i], questions=questions,
                                                   role=gpt_role)
             summarized_answer = summarize_answer(openai_api_key=self.openai_api_key,
-                                                 needed_information=needed_information, questions=questions,
+                                                 needed_information=needed_information_list[i], questions=questions,
                                                  answers=answers,)
 
-            if use_tool != 'user_input':
+            if use_tool_list[i] != 'user_input':
                 check_response = answer_reliable_check(openai_api_key=self.openai_api_key,
                                                        task=self.now_task_element.task,
-                                                       needed_information=needed_information, answer=summarized_answer)
+                                                       needed_information=needed_information_list[i],
+                                                       answer=summarized_answer)
                 if check_response == '1':
-                    new_answers = answer_questions_by_user(goal=self.goal, needed_information=needed_information,
+                    new_answers = answer_questions_by_user(goal=self.goal,
+                                                           needed_information=needed_information_list[i],
                                                            questions=questions)
                     summarized_answer = summarize_answer(openai_api_key=self.openai_api_key,
-                                                         needed_information=needed_information, questions=questions,
+                                                         needed_information=needed_information_list[i],
+                                                         questions=questions,
                                                          answers=new_answers, )
 
             summarized_answer_list.append(summarized_answer)
