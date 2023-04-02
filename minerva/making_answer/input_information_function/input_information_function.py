@@ -57,12 +57,14 @@ class InputInformationFunction:
                     ask_gpt_list.append(questions_list[j])
 
             # ユーザーによる回答
+            user_answers_list = []
             if ask_user_list:
                 print("-----answer_questions_by_user")
                 print(f"(確認用)ask_user_list: {ask_user_list}")
                 user_answers_list = answer_questions_by_user(goal=self.goal, needed_information=needed_information_list[i],
                                                              questions_list=ask_user_list)
             # gptによる回答
+            gpt_answers_list = []
             if ask_gpt_list:
                 print("-----create_gpt_role")
                 print(f"(確認用)ask_gpt_list: {ask_gpt_list}")
@@ -74,7 +76,6 @@ class InputInformationFunction:
                                                            questions_list=ask_gpt_list, role=gpt_role_list)
 
             # user_answers_listも、gpt_answers_listも、[Q: ~, A: ~] の形で入っている
-
             if ask_gpt_list:
                 for j in range(len(gpt_answers_list)):
                     check_response = answer_reliable_check(openai_api_key=self.openai_api_key,

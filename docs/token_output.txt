@@ -1,17 +1,10 @@
 # token usage history
-function_name: generate_hypothesis, use_token: 684, total_token: 684
-function_name: create_summarize, use_token: 988, total_token: 1672
-function_name: enough_information, use_token: 651, total_token: 2323
-function_name: should_task_breakdown, use_token: 959, total_token: 3282
-function_name: create_outline, use_token: 1124, total_token: 4406
-function_name: enough_information, use_token: 1474, total_token: 5880
-function_name: list_needed_information, use_token: 1803, total_token: 7683
-function_name: create_questions, use_token: 970, total_token: 8653
-function_name: select_tool, use_token: 1187, total_token: 9840
-function_name: select_tool, use_token: 1161, total_token: 11001
-function_name: select_tool, use_token: 1178, total_token: 12179
-function_name: create_gpt_role, use_token: 511, total_token: 12690
-function_name: create_gpt_role, use_token: 529, total_token: 13219
-function_name: create_gpt_role, use_token: 523, total_token: 13742
-function_name: create_gpt_role, use_token: 533, total_token: 14275
-function_name: create_gpt_role, use_token: 580, total_token: 14855
+function_name: generate_hypothesis, use_token: 620, total_token: 620
+function_name: create_summarize, use_token: 905, total_token: 1525
+function_name: enough_information, use_token: 547, total_token: 2072
+function_name: should_task_breakdown, use_token: 855, total_token: 2927
+function_name: create_outline, use_token: 1016, total_token: 3943
+function_name: enough_information, use_token: 1278, total_token: 5221
+function_name: list_needed_information, use_token: 1714, total_token: 6935
+function_name: create_questions, use_token: 1003, total_token: 7938
+function_name: select_tool, use_token: 1221, total_token: 9159
