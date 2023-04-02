@@ -3,7 +3,7 @@ from minerva.token_class import Token
 
 
 class SummarizeHypothesis:
-    def __init__(self, openai_api_key: str, goal: str, information: str, hypothesis_list: list[str], user_intent: str,):
+    def __init__(self, openai_api_key: str, goal: str, information: str, contents_list: list[str], user_intent: str,):
         openai.api_key = openai_api_key
         information_prompt = ''
         if information != '':
@@ -11,24 +11,21 @@ class SummarizeHypothesis:
         user_intent_prompt = ''
         if user_intent != '':
             user_intent_prompt = f'{user_intent} is user\'s intent, so keep this request in mind when answering.'
-        print(f"user intent:{user_intent_prompt}")
+
         self.system_input = f"""
-Your name is Minerva, and you're an AI that helps the user do their jobs.
-The task is to match the outputs that the user wants with the outputs that Minerva will produce 
-before starting the project.
-{goal} 
-{information_prompt}
-{user_intent_prompt}
-# output lang: jp
-"""
+        Your name is Minerva, and you're an AI that helps the user do their jobs.
+        [goal] = {goal} 
+        [information] = {information_prompt}
+        [user intent] = {user_intent_prompt}
+        [contents] = {contents_list}
+        # output lang: jp
+        """
+
         self.user_prompt = f"""
-From {hypothesis_list}, think about what the user wants from Minerva and output what Minerva will create from now on for what.
-# output lang: jp
-"""
-        
-        self.assistant_prompt = f"""
-I will make ~ for ~.
-...
+        Set the goal of the work that Minerva will do appropriately by summarizing what kind of documentation Minerva will produce to accomplish [goal].
+        Be sure to include [contents] in the goal, as it is an item that the user has determined should be included in the document.
+        To clarify the goal, please include the reason why Minerva set such a goal.
+        # output lang: jp
         """
         self.messages = [
             {"role": "system", "content": self.system_input},

@@ -25,25 +25,24 @@ def list_needed_information(openai_api_key: str, goal: str, tree_element_list: l
         children_task_list = parents_task.children
         all_information = ''
         task_and_answer_prompt = ''
-        all_information += current_task.information + '\n'
-        all_information += parents_task.information + '\n'
-        processed_order = current_task.path
+        all_information += current_task.information + ', '
+        all_information += parents_task.information + ', '
         for element in children_task_list:
-            all_information += element.information + '\n'
-            if element.process_order < processed_order:
+            all_information += element.information + ', '
+            if element.answer:
                 task_and_answer_prompt += f'task:{element.task}, answer:{element.answer}'
-            if element.process_order > processed_order:
-                task_and_answer_prompt += f'task:{element.task}, answer: not yet'
+            else:
+                task_and_answer_prompt += f'task:{element.task}, answer: not yet, '
 
         system_input = f'''
     Your name is Minerva, and you're an AI that helps the user do their jobs.
     [goal] = {goal}
-    [current task] = {current_task}
+    [current task] = {current_task.task}
     [owned information] = {all_information}
     Keep in mind [goal]
     Now you are doing the task that [current task]
-    {task_and_answer_prompt} are tasks and their answers on the same layer as [current task]
-    , which are decomposed tasks to solve {parents_task}
+    [{task_and_answer_prompt}] are tasks and their answers on the same layer as [current task]
+    , which are decomposed tasks to solve {parents_task.task}
     # output lang: jp
             '''
 
@@ -57,7 +56,7 @@ def list_needed_information(openai_api_key: str, goal: str, tree_element_list: l
         '''
 
     user_prompt = f'''
-    List the information needed to perform the task [current task] in addition to [ownd information]
+    List information needed to perform the task [current task] in addition to [ownd information]
     Also, output only bullet numbers and the information you want in a straightforward manner.
     Do not write any other information.
     # output lang: jp
@@ -79,14 +78,15 @@ def list_needed_information(openai_api_key: str, goal: str, tree_element_list: l
     )
 
     ai_response = response['choices'][0]['message']['content']
-    print(f"needed information: {ai_response}")
+
+    print(f"（確認用）needed information(row): {ai_response}")
     # トークン数のアウトプットの処理
     token = response["usage"]["total_tokens"]
     # print(f'usage tokens:{token}')
     use_token = Token(token)
     use_token.output_token_information('list_needed_information')
-
+    ai_response = ai_response.replace(" ", "")
     # Extract the needed information from the AI response
-    needed_information_list = re.findall(r'^\d+\.\s(.+)', ai_response, re.MULTILINE)
+    needed_information_list = re.findall(r'^\d+\.(.+)', ai_response, re.MULTILINE)
 
     return needed_information_list

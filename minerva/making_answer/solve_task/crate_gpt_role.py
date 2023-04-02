@@ -12,6 +12,11 @@ def crate_gpt_role(openai_api_key, now_task_element: TaskTreeElement):
     [Owned information] = {now_task_element.information}
         '''
 
+    assistant_prompt = '''
+    role: ~
+    skills: ~
+    '''
+
     user_prompt = f'''
     Please tell us what is the most appropriate job title for the [current task].
     Please tell us specifically what abilities, skills, and experience would best fit the position.
@@ -22,6 +27,7 @@ def crate_gpt_role(openai_api_key, now_task_element: TaskTreeElement):
 
     messages = [
         {"role": "system", "content": system_input},
+        {"role": "assistant", "content": assistant_prompt},
         {"role": "user", "content": user_prompt}
     ]
 

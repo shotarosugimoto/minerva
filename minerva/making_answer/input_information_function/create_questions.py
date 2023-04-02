@@ -4,31 +4,36 @@ import openai
 from ...token_class import Token
 
 
-def create_questions(openai_api_key: str, goal: str, now_task_element: TaskTreeElement, needed_information: str, tool: str,):
+def create_questions(openai_api_key: str, goal: str, now_task_element: TaskTreeElement, needed_information: str):
 
     openai.api_key = openai_api_key
 
     system_input = f'''
-[goal] = {goal}
-[current task] = {now_task_element.task}
-Now you are doing [current task] to achieve [goal].
-{needed_information}は{now_task_element.task}をこなすために必要な情報です
-{tool}:{needed_information}をとってくる際に使うツールです'''
+    Your name is Minerva, and you're an AI that helps the user do their jobs.
+    [goal] = {goal}
+    [current task] = {now_task_element.task}
+    [needed information] = {needed_information}
+    Keep in mind [goal].
+    Now you are doing [current task].
+    [needed information] is needed to solve [current task].
+    # output lang: jp
+    '''
 
     assistant_prompt = '''
-1. ~~
-2. ~~
-3. ~~
-4. ~~
-5. ~~
-...'''
+    1. ~~
+    2. ~~
+    3. ~~
+    4. ~~
+    5. ~~
+    ...
+    '''
 
     user_prompt = f'''
-現在のステップは。{now_task_element.task}をこなすために必要な{needed_information}を、{tool}を使って収集することです。
-[output style]
-この時{needed_information}を収集できるように、{needed_information}をできる限り細分化して、箇条書きで列挙しなさい。
-Answer in the form of [1. ~ \n2. ~ \n...]
-'''
+    Create a question to acquire the [needed information] needed to do [current task].
+    Make the questions as detailed as possible so that [needed information] can be successfully collected.
+    # output lang: jp
+    # output style: [1. ~ \n2. ~ \n...]
+    '''
 
     messages = [
         {"role": "system", "content": system_input},

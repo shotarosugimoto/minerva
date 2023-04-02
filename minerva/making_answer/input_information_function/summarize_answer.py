@@ -3,21 +3,24 @@ import openai
 from minerva.token_class import Token
 
 
-def summarize_answer(openai_api_key: str, needed_information: str, questions: str, answers: str):
+def summarize_answer(openai_api_key: str, task: str, needed_information: str, answers: list[str]):
     openai.api_key = openai_api_key
     system_input = f'''
-[needed_information]:現在求めている情報です
-[questions]：[needed_information]をさらに細分化したもの
-[answers]:[questions]の答えです。番号はそれぞれ対応しています。
-
-needed_information: {needed_information}
-questions: {questions}
-answers: {answers}'''
+    Your name is Minerva, and you're an AI that helps the user do their jobs.
+    [current task] = {task}
+    [needed_information] = {needed_information}
+    [answers] = {answers}
+    Now you are doing [current task].
+    [needed information] is information that is needed to solve [current task].
+    [answers] are questions and their answers to obtain [needed information].
+    # output lang: jp
+    '''
 
     user_prompt = f'''
-ここでは、[needed_information]の適切な答えを導出するために、[questions]と[answers]を用意しました。
-[needed_information]の適切な答えとなるために、[questions]と[answers]の内容をようやくしてください。
-'''
+    summarize [answers] to meet the information required by [need_information].
+    summarize [answers] so that there is no excess or deficiency of information.
+    # output lang: jp
+    '''
 
     messages = [
         {"role": "system", "content": system_input},
@@ -31,7 +34,7 @@ answers: {answers}'''
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
-
+    print(f"summarize gpt answers: {ai_response}")
     # トークン数のアウトプットの処理
     token = response["usage"]["total_tokens"]
     print(f'usage tokens:{token}')

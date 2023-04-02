@@ -38,31 +38,30 @@ def should_task_breakdown(openai_api_key: str, goal: str, tree_element_list: lis
         children_task_list = parents_task.children
         all_information = ''
         task_and_answer_prompt = ''
-        all_information += current_task.information + '\n'
-        all_information += parents_task.information + '\n'
-        processed_order = current_task.path
+        all_information += current_task.information + ', '
+        all_information += parents_task.information + ', '
         for element in children_task_list:
-            all_information += element.information + '\n'
-            if element.process_order < processed_order:
+            all_information += element.information + ', '
+            if element.answer:
                 task_and_answer_prompt += f'task:{element.task}, answer:{element.answer}'
-            if element.process_order > processed_order:
-                task_and_answer_prompt += f'task:{element.task}, answer: not yet'
+            else:
+                task_and_answer_prompt += f'task:{element.task}, answer: not yet, '
 
         system_input = f'''
     Your name is Minerva, and you're an AI that helps the user do their jobs.
     [goal] = {goal}
-    [current task] = {tree_element_list[processed_task_number]}
-    [Owned information] = {all_information}
+    [current task] = {tree_element_list[processed_task_number].task}
+    [owned information] = {all_information}
     [user intent] = {parents_task.user_intent}
     Keep in mind [goal].
     Now you are doing [current task].
-    [Owned information] is information that is needed and available for reference when solving [current task].
+    [owned information] is information that is needed and available for reference when solving [current task].
     [user intent] is user\'s intent, so keep this request in mind when answering.
     {task_and_answer_prompt} are tasks and their answers on the same layer as [current task]
-    , which are decomposed tasks to solve {parents_task}.
+    , which are decomposed tasks to solve {parents_task.task}.
     Currently, [current task] is divided {tree_element_list[processed_task_number].depth} times from the final output.
         '''
-
+        print(f"system_input: {system_input}")
     assistant_prompt = '''
     0
         '''

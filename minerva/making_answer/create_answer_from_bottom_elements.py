@@ -12,22 +12,22 @@ def create_answer_from_bottom_elements(openai_api_key: str, goal: str, tree_elem
     children_task_list = current_task.children  # 現在のタスクの下のタスクのリスト
     all_information = ''
     children_task_and_answer_prompt = ''
-    all_information += current_task.information + '\n'
-    all_information += parents_task.information + '\n'
+    all_information += current_task.information + ', '
+    all_information += parents_task.information + ', '
 
     for element in children_task_list:
-        all_information += element.information + '\n'
+        all_information += element.information + ', '
         children_task_and_answer_prompt += f'task:{element.task}, answer:{element.answer}'
 
     system_input = f'''
     Your name is Minerva, and you're an AI that helps the user do their jobs.
     [goal] = {goal}
-    [current task] = {tree_element_list[processed_task_number]}
+    [current task] = {tree_element_list[processed_task_number].task}
     [Owned information] = {all_information}
     [user intent] = {current_task.user_intent}
     [Subdivided tasks and answers] = {children_task_and_answer_prompt} 
     Keep in mind [goal].
-    Now you are doing [current task] to accomplish {parents_task}.
+    Now you are doing [current task] to accomplish {parents_task.task}.
     [Owned information] is information that is needed and available for reference when solving [current task].
     [user intent] is user\'s intent, so keep this request in mind when answering.
     Since [Subdivided tasks and answers] are the tasks and their answers broken down to do [current_task].

@@ -14,6 +14,7 @@ class DecideGoal:
     def redefine_goal(self):
         selected_hypotheses = []
 
+        # ドキュメントに含むべき内容をユーザーと決める
         while True:
             generate_hypothesis = GenerateHypothesis(
                 openai_api_key=self.openai_api_key,
@@ -23,9 +24,11 @@ class DecideGoal:
                 user_intent=self.user_intent_for_hypothesis,
             )
             print('Please wait a moment.')
-
+            # ドキュメントに入れるべきだと考えられる内容を考えて、提示する
+            print("-----generate_hypothesis")
             hypothesis_list = generate_hypothesis.generate_hypothesis()
-            # ユーザーに仮説を選択させる
+            # ユーザーに仮説を選択させる、選択された仮説が返される
+            print("-----select_hypothesis")
             selected_hypotheses = select_hypothesis(hypothesis_list)
 
             # 新しい仮説が必要ならば追加情報を入力させる
@@ -40,31 +43,31 @@ class DecideGoal:
                     break
             # 情報が入力されたら、選択された仮説と追加情報をuser intentに入れて新たに仮説を生成するループに戻る
             else:
-                self.user_intent_for_hypothesis = new_intent + ', '.join(selected_hypotheses)
-            print(f"user_intent_for_hypothesis: {self.user_intent_for_hypothesis}")
+                self.user_intent_for_hypothesis = new_intent
             continue
 
-        # 選択された仮説を要約して明確な目標を作成
+        # ドキュメントに入れる内容とユーザーの意図から、ゴールを作成する。ゴールに入るプロンプトとして適切なものにする作業
         while True:
+            print("-----summarize_hypothesis")
             summarize_hypothesis = SummarizeHypothesis(
                 openai_api_key=self.openai_api_key,
                 goal=self.goal,
                 information=self.information,
-                hypothesis_list=selected_hypotheses,
+                contents_list=selected_hypotheses,
                 user_intent=self.user_intent_for_summarize,
             )
-            print('情報の提供ありがとうございます！\n')
+            print(f'内容：{selected_hypotheses}')
             print('最終的なアウトプットのイメージを考えていますので、少々お待ちください。\n')
             summarize_result = summarize_hypothesis.create_summarize()
 
             print('こちらが、私が今考えているアウトプットのイメージです:')
             print(f'{summarize_result}\n')
 
-            user_answer = input('このアウトプットの形で大丈夫な場合は 0 を入力し、そうでない場合は 1 を入力してください')
+            user_answer = input('このアウトプットの形で大丈夫な場合は 1 を入力し、そうでない場合は 2 を入力してください')
             # 最終的にはここをマニュアルで編集も可能にしたい
-            while user_answer not in ['0', '1']:
-                user_answer = input('Invalid input. このアウトプットの形で大丈夫な場合は 0 を入力し、そうでない場合は 1 を入力してください')
-            if user_answer == '0':
+            while user_answer not in ['1', '2']:
+                user_answer = input('Invalid input. このアウトプットの形で大丈夫な場合は 1 を入力し、そうでない場合は 2 を入力してください')
+            if user_answer == '1':
                 break
             del summarize_hypothesis
             # 新たな目標を生成するための追加情報を入力させる
@@ -74,18 +77,23 @@ class DecideGoal:
 
 
 # redefine_goalで呼び出される。ミネルバが出した仮説を取捨選択する機能
+# 最終的には、仮説全体が表示され、それぞれにチェックボックスがあって、選択されたものがselected_hypothesesに入る
+# そして、追加の情報があれば入れてもらう
+# そのまま一つのゴールを作成するか、もう少し意図のすり合わせを行うかを選べるようにする
 def select_hypothesis(hypothesis_list):
+    # ただ選択するだけじゃなくて、一つ一つに文句を言わせてほしい、いいんだけど...みたいなのあるから、
+    # それを踏まえて、最初から作り直すのでもいいかもしれない
     selected_hypotheses = []
-    print("最終的に私が作成するものは以下のようなものでよろしいでしょうか？\nここで選択されなかった仮説は破棄され、選択された仮説をもとに最終的なアウトプットイメージを出力します")
+    print("以下の内容をドキュメントに含めるのがいいのではないかと仮説を立ててみました。")
     for num in range(len(hypothesis_list)):
         print(f'{num + 1}. {hypothesis_list[num]}')
-        print("\n")
+    print("意図に合うものを選択して下さい\nここで選択されなかった内容は破棄され、選択された内容をもとに最終的なアウトプットイメージを考えます")
     for num in range(len(hypothesis_list)):
         print(f'{num + 1}. {hypothesis_list[num]}')
-        user_input = input('Enter Y if you accept this hypothesis, N if you do not.')
-        while user_input not in ['Y', 'N']:
-            print('Invalid input. Please enter Y if you accept this hypothesis, N if you do not.')
+        user_input = input('Enter 1 if you accept this hypothesis, 2 if you do not.')
+        while user_input not in ['1', '2']:
+            print('Invalid input. Please enter 1 if you accept this hypothesis, 2 if you do not.')
             user_input = input()
-        if user_input == 'Y':
+        if user_input == '1':
             selected_hypotheses.append(hypothesis_list[num])
     return selected_hypotheses

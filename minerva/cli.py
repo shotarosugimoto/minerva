@@ -49,6 +49,7 @@ def main():
     step_number: int = 0
 
     while 1:
+        print("-----task_process")
         process_location = making_answer.task_process(processed_task_number=processed_task_number,
                                                       step_number=step_number)
         processed_task_number = process_location[0]
