@@ -18,13 +18,16 @@ class SummarizeHypothesis:
         [information] = {information_prompt}
         [user intent] = {user_intent_prompt}
         [contents] = {contents_list}
+        [contents] is the content that the user has determined needs to be included in the document
         # output lang: jp
         """
 
         self.user_prompt = f"""
-        Set the goal of the work that Minerva will do appropriately by summarizing what kind of documentation Minerva will produce to accomplish [goal].
-        Be sure to include [contents] in the goal, as it is an item that the user has determined should be included in the document.
-        To clarify the goal, please include the reason why Minerva set such a goal.
+        Set the goal of the work that Minerva will do appropriately 
+        by summarizing what kind of documentation Minerva will produce to accomplish [goal] 
+        and include the reason why Minerva set such a goal in japanese.
+        <constraints>
+        Briefly describe the document that should be produced in Minerva.
         # output lang: jp
         """
         self.messages = [
@@ -35,12 +38,11 @@ class SummarizeHypothesis:
     def create_summarize(self):
 
         response = openai.ChatCompletion.create(
-            temperature=1,
+            temperature=0,
             max_tokens=1000,
             model="gpt-3.5-turbo",
             messages=self.messages
         )
-
         ai_response = response['choices'][0]['message']['content']
         token = response["usage"]["total_tokens"]  # インスタンス変数を使って加算する
         print(f'usage tokens:{token}')

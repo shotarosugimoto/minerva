@@ -13,6 +13,10 @@ class GenerateHypothesis:
             Your name is Minerva, and you're an AI that helps the user do their jobs.
             [goal] = {goal}
             [information] = {information}
+            [information] is information provided by the user and should be referenced.
+            <constraints>
+            Never create multiple tiers.
+            Never output anything that is not related to the content of the document, such as the procedure for creating the document.
             # output lang: jp
             '''
 
@@ -20,6 +24,8 @@ class GenerateHypothesis:
             Hypothesize what content Minerva should include in the document, based on [goal] and [information].
             List all the contents you think should be included.
             Use bullet points and make your hypothesis user-readable.
+            <constraints>
+            list only what should be included in the document
             # output example: [1. ~\n2. ~\n3. ~\n...]
             # output lang: jp
             '''
@@ -32,14 +38,19 @@ class GenerateHypothesis:
             [information] = {information}
             [user intent] = {user_intent_prompt}
             [hypothesis prompt] = {hypothesis_list}
+            [information] is information provided by the user and should be referenced.
+            <constraints>
+            Never create multiple tiers.
+            Never output anything that is not related to the content of the document, such as the procedure for creating the document.
             The contents of [hypothesis prompt] have already been deemed necessary by the user, so be sure to include them in the documentation
             # output lang: jp
             '''
             self.user_prompt = f'''
             Hypothesize what content Minerva should include in the document, based on [goal] and [information] and [user intent].
-            please Do not output the contents contained in [hypothesis prompt].
             [user intent]
             Use bullet points and make your hypothesis user-readable.
+            <constraints>
+            list only what should be included in the document.
             # output example: [1. ~\n2. ~\n3. ~\n...]
             # output lang: jp
             '''
@@ -59,7 +70,7 @@ class GenerateHypothesis:
 
     def generate_hypothesis(self):
         response = openai.ChatCompletion.create(
-            temperature=0.7,
+            temperature=0,
             max_tokens=1000,
             model="gpt-3.5-turbo",
             messages=self.messages
@@ -71,5 +82,7 @@ class GenerateHypothesis:
         use_token = Token(token)
         use_token.output_token_information('generate_hypothesis')
         ai_response = ai_response.replace(" ", "")
-        hypothesis = re.findall(r'^\d+\.(.+)', ai_response, re.MULTILINE)
+        raw_hypothesis = re.findall(r'^(?:\d+\..+|-.+)$', ai_response, re.MULTILINE)
+        # 数字とピリオドを削除
+        hypothesis = [re.sub(r'^\d+\.|-', '', line) for line in raw_hypothesis]
         return hypothesis

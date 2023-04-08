@@ -35,12 +35,13 @@ def main():
 
     initial_add_information = input('(optional) Write your additional information : ')
 
-    initial_information = "Additional information provided by the user: " + initial_add_information
+    initial_information = "Additional information provided by the user about the user: " + initial_add_information
 
     # decide_goalの処理
     # 一番大きいアウトラインまで完成する
     decide_goal = DecideGoal(openai_api_key=openai_api_key, goal=initial_goal, information=initial_information)
     new_goal = decide_goal.redefine_goal()
+    # ドキュメントのコンテンツとかが決まったら、それに対して必要な情報を一括で獲得したい
 
     making_answer = MakingAnswer(openai_api_key=openai_api_key, initial_goal=new_goal, user_intent=initial_goal,
                                  initial_information=initial_information)

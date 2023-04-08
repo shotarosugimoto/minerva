@@ -25,6 +25,8 @@ class MakingAnswer:
         print(f"processed_task_number: {processed_task_number}")
         print(f"step_number: {step_number}")
 
+        # 必要な情報を一括で取得する
+        # ゴールはできている
         # enough_informationから、breakdownまで
         if step_number == 0:
             print("-----enough_information")

@@ -3,28 +3,33 @@ import openai
 from minerva.token_class import Token
 
 
-def summarize_answer(openai_api_key: str, task: str, needed_information: str, answers: list[str]):
+def answer_reliable_check(openai_api_key: str, task: str, needed_information: str, answer: str):
     openai.api_key = openai_api_key
     system_input = f'''
     Your name is Minerva, and you're an AI that helps the user do their jobs.
     [current task] = {task}
     [needed_information] = {needed_information}
-    [answers] = {answers}
+    [answers] = {answer}
     Now you are doing [current task].
     [needed information] is information that is needed to solve [current task].
     [answers] are questions and their answers to obtain [needed information].
-    # output lang: jp
+    '''
+
+    assistant_prompt = f'''
+    F
     '''
 
     user_prompt = f'''
-    summarize [answers] to meet the information required by [need_information].
-    summarize [answers] so that there is no excess or deficiency of information.
-    Output only the content of the summary. No preface is needed.
-    # output lang: jp
+    Output "T" if [answers] is correct.
+    Output "F" if [answers] may contain errors.    
+    Be sure to output only "T" or "F".
+    Do not write any other explanations, notes, or circumstances that led to the output.
+    just write "T" or "F".
     '''
 
     messages = [
         {"role": "system", "content": system_input},
+        {"role": "assistant", "content": assistant_prompt},
         {"role": "user", "content": user_prompt},
     ]
 
@@ -35,11 +40,17 @@ def summarize_answer(openai_api_key: str, task: str, needed_information: str, an
         messages=messages
     )
     ai_response = response['choices'][0]['message']['content']
-    print(f"summarize gpt answers: {ai_response}")
     # トークン数のアウトプットの処理
     token = response["usage"]["total_tokens"]
-    print(f'usage tokens:{token}')
+    # print(f'usage tokens:{token}')
     use_token = Token(token)
-    use_token.output_token_information('summarize_answer')
+    use_token.output_token_information('answer_reliable_check')
 
-    return ai_response
+    if ai_response.strip() == "T":
+        print(f"{answer}\ncorrect information")
+        return True
+    elif ai_response.strip() == "F":
+        print(f"{answer}\nPossible error in information")
+        return False
+    else:
+        return "Error: Invalid response"
